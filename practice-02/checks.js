@@ -376,4 +376,38 @@ check("Собственный случай 3. Добавление сохран�
 console.log(`\nПроверок пройдено: ${passed}; не пройдено: ${failed}.`);
 if (failed > 0) {
   process.exitCode = 1;
+}// Собственные проверки.
+check("36. Собственный случай: добавление после удаления", () => {
+  const tasks = fixture();
+  const afterRemove = expectTasks(removeTask(tasks, 7));
+  const afterAdd = expectTasks(addTask(afterRemove, 30, "Новая после удаления", "low"));
+  assert.deepEqual(afterAdd.map((task) => task.id), [1, 4, 10, 30]);
+  assert.deepEqual(tasks, fixture());
+});
+
+check("37. Собственный случай: изменение первой и последней записи", () => {
+  const tasks = fixture();
+  const firstChanged = expectTasks(renameTask(tasks, 1, "Функции изучены"));
+  const lastChanged = expectTasks(setTaskCompleted(firstChanged, 10, false));
+  assert.equal(lastChanged[0].title, "Функции изучены");
+  assert.equal(lastChanged[3].completed, false);
+  assert.deepEqual(tasks, fixture());
+});
+
+check("38. Собственный случай: последовательное обновление двух задач", () => {
+  const tasks = fixture();
+  const one = expectTasks(setTaskCompleted(tasks, 4, true));
+  const two = expectTasks(setTaskCompleted(one, 7, true));
+  assert.deepEqual(getTaskStats(two), {
+    total: 4,
+    completed: 4,
+    pending: 0,
+    progress: 100,
+  });
+  assert.deepEqual(tasks, fixture());
+});
+
+console.log(`\nПроверок пройдено: ${passed}; не пройдено: ${failed}.`);
+if (failed > 0) {
+  process.exitCode = 1;
 }
