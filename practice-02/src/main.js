@@ -11,10 +11,10 @@ import {
 } from "./task-service.js";
 
 function printStats(label, tasks) {
-  const stats = getTaskStats(tasks);
+  const { total, completed, pending, progress } = getTaskStats(tasks);
   console.log(`\n${label}`);
-  console.log(`Всего: ${stats.total}; выполнено: ${stats.completed}; осталось: ${stats.pending}`);
-  console.log(stats.total === 0 ? "Задач пока нет" : `Прогресс: ${stats.progress.toFixed(1)}%`);
+  console.log(`Всего: ${total}; выполнено: ${completed}; осталось: ${pending}`);
+  console.log(total === 0 ? "Задач пока нет" : `Прогресс: ${progress.toFixed(1)}%`);
 }
 
 function apply(currentTasks, result) {
@@ -25,36 +25,63 @@ function apply(currentTasks, result) {
 
 console.log("ПР2. Общий демонстрационный сценарий");
 console.table(demoTasks);
-console.log("Названия:", getTaskTitles(demoTasks));
-console.log("Невыполненные:", getPendingTasks(demoTasks));
 printStats("Исходный набор", demoTasks);
 
 let currentTasks = demoTasks;
 currentTasks = apply(currentTasks, addTask(currentTasks, 20, "Добавить проверку", "high"));
-printStats("После добавления id 20", currentTasks);
-
 currentTasks = apply(currentTasks, setTaskCompleted(currentTasks, 4, true));
-printStats("После выполнения id 4", currentTasks);
-
 currentTasks = apply(currentTasks, renameTask(currentTasks, 10, "Подготовить инструкцию запуска"));
-printStats("После переименования id 10", currentTasks);
-
 currentTasks = apply(currentTasks, removeTask(currentTasks, 7));
-printStats("После удаления id 7", currentTasks);
-
-console.log("\nПоиск id 10:", findTaskById(currentTasks, 10));
-console.log("Итоговые id:", currentTasks.map((task) => task.id));
+printStats("После общего сценария", currentTasks);
 
 const failedOperation = addTask(currentTasks, 10, "Дубликат");
-if (!failedOperation.ok) {
-  console.log("Ожидаемый отказ:", failedOperation.error);
-}
-console.log("Исходный demoTasks после сценария:");
+if (!failedOperation.ok) console.log("Ожидаемый отказ:", failedOperation.error);
+console.log("demoTasks после общего сценария:");
 console.table(demoTasks);
 
-console.log("\nИндивидуальный вариант:", variantNumber);
-if (variantTasks.length === 0) {
-  console.log("Индивидуальный набор пока не заполнен: нужен номер варианта.");
-} else {
-  console.table(variantTasks);
+console.log(`\nИндивидуальный вариант ${variantNumber}: подготовка выступления`);
+let variantCurrent = variantTasks;
+console.table(variantCurrent);
+printStats("Вариант: исходное состояние", variantCurrent);
+
+variantCurrent = apply(
+  variantCurrent,
+  addTask(variantCurrent, 80, "Подготовить финальные слайды", "medium")
+);
+printStats("Вариант: после добавления id=80", variantCurrent);
+
+variantCurrent = apply(
+  variantCurrent,
+  setTaskCompleted(variantCurrent, 11, true)
+);
+printStats("Вариант: после выполнения id=11", variantCurrent);
+
+variantCurrent = apply(
+  variantCurrent,
+  renameTask(variantCurrent, 23, "Составить финальный план выступления")
+);
+printStats("Вариант: после переименования id=23", variantCurrent);
+
+variantCurrent = apply(
+  variantCurrent,
+  removeTask(variantCurrent, 37)
+);
+printStats("Вариант: после удаления id=37", variantCurrent);
+
+const duplicateVariant = addTask(
+  variantCurrent,
+  80,
+  "Повторная задача",
+  "medium"
+);
+if (!duplicateVariant.ok) {
+  console.log("Ожидаемый отказ при повторном id=80:", duplicateVariant.error);
 }
+
+console.log("Итоговые задачи варианта:");
+console.table(variantCurrent);
+console.log("Исходный variantTasks не изменён:");
+console.table(variantTasks);
+console.log("Названия итоговых задач:", getTaskTitles(variantCurrent));
+console.log("Невыполненные задачи:", getPendingTasks(variantCurrent));
+console.log("Поиск id=23:", findTaskById(variantCurrent, 23));
